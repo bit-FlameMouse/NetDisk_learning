@@ -50,10 +50,6 @@ NetDisk 是一款基于**自定义二进制协议（NDP-Lite）**的类 CLI 网�
 | 超时管理 | **时间轮** | O(1) 添加/删除/到期，比链表遍历或最小堆更适合万级连接 |
 | 构建 | **CMake + GCC** | 跨发行版兼容，两个 target（服务端 + 客户端） |
 
-> 🔗 **详细设计理由** 见各相关子文档：
-> - 为什么选 epoll + 时间轮 → [§10 并发模型](#10-并发模型)
-> - 为什么选 JWT → [JWT_WORKFLOW.md](JWT_WORKFLOW.md) §1
-> - 为什么选 LRU → [LRU_CACHE.md](LRU_CACHE.md) §2
 
 ---
 
@@ -140,7 +136,6 @@ NetDisk 是一款基于**自定义二进制协议（NDP-Lite）**的类 CLI 网�
 [15] timer_refresh() → 重置连接空闲超时
 ```
 
-> 🔗 数据流中的关键模块：帧解析器 → [§5.4 帧解析状态机](#54-帧解析状态机) | JWT 验证 → [JWT_WORKFLOW.md](JWT_WORKFLOW.md) §6 | LRU 缓存 → [LRU_CACHE.md](LRU_CACHE.md) §5 | VFS → [§8.1 虚拟文件系统](#81-虚拟文件系统-vfsc)
 
 ### 3.4 协议选型分析
 
@@ -320,7 +315,7 @@ main.c
 | `0x20` | `RESUME_PUT` | C→S | 断点续传上传 |
 | `0x21` | `RESUME_GET` | C→S | 断点续传下载 |
 
-> 🔗 断点续传下载的完整交互流程 → [RESUME_DOWNLOAD_REPORT.md](RESUME_DOWNLOAD_REPORT.md) §3
+
 
 #### 响应码（放在 CMD 字段中返回）
 
@@ -539,7 +534,6 @@ typedef enum {
 
 后续请求携带 JWT，服务端 `jwt_verify()` 在内存中验签——提取 `sub` 作为 user_id，**无需查数据库**。
 
-> 🔗 JWT 的完整生命周期（签发 → 携带 → 验证 → 过期）→ [JWT_WORKFLOW.md](JWT_WORKFLOW.md)
 
 ### 6.3 注册后自动登录
 
@@ -570,8 +564,6 @@ int cmd_register(int sockfd, const char *user, const char *pass) {
 服务端: lseek(fd, offset) + sendfile 并发响应
 客户端: 合并分块写入本地文件
 ```
-
-> 🔗 普通下载 vs 断点续传 vs 多点下载的完整对比 → [RESUME_DOWNLOAD_REPORT.md](RESUME_DOWNLOAD_REPORT.md) §2
 
 ---
 
@@ -780,7 +772,6 @@ int cmd_pwd(void) { printf("%s\n", g_cwd); return 0; }
 5. 返回 node_id = 20
 ```
 
-> 🔗 路径解析的 LRU 缓存优化 → [LRU_CACHE.md](LRU_CACHE.md) §5
 
 #### 核心接口
 
@@ -875,7 +866,6 @@ tmp/     ← 上传中临时文件: tmp/{upload_id}/chunk_{seq}
 
 `sendfile()` 直接将数据从内核 page cache 传输到 socket buffer，全程不经过用户态缓冲区。
 
-> 🔗 下载系统的完整文档 → [RESUME_DOWNLOAD_REPORT.md](RESUME_DOWNLOAD_REPORT.md)
 
 #### 秒传检测
 
@@ -980,7 +970,6 @@ timer_refresh(fd):                     // 有活动时重置
 
 ### 8.5 JWT 认证 (jwt.c)
 
-> 🔗 JWT 完整工作流程 → [JWT_WORKFLOW.md](JWT_WORKFLOW.md) — 包含签发、验证、过期处理、攻击场景的完整分析。
 
 ```c
 // 签发 (15 分钟有效)
@@ -1176,7 +1165,6 @@ CREATE TABLE upload_sessions (
 
 `db_acquire()` 超时 5 秒返回错误，避免永久阻塞。epoll 事件分发阶段完全无锁。
 
-> 🔗 LRU 缓存为什么用读写锁 → [LRU_CACHE.md](LRU_CACHE.md) §6
 
 ---
 
@@ -1315,7 +1303,7 @@ NetDisk>
 
 | 功能 | 说明 | 工作量 |
 |------|------|--------|
-| LRU 路径缓存 | 双向链表+哈希表，减少热路径 SQL（已规划 [LRU_CACHE.md](LRU_CACHE.md)） | 约 300 行 |
+| LRU 路径缓存 | 双向链表+哈希表，减少热路径 SQL | 约 300 行 |
 | 全文搜索 | MySQL FULLTEXT + ngram 分词；`search.c` | 约 250 行 |
 | 打包下载 | zlib 流式 zip + sendfile；`archive.c` | 约 300 行 |
 | 分享链接 | `shares` 表 + 提取码；`share.c` | 约 200 行 |
@@ -1465,5 +1453,4 @@ NetDisk>
 | `0x88` | `ERR_RANGE` | `OFFSET` > 文件大小 |
 
 ---
-
-> 📚 **相关文档**：[REPORT.md](REPORT.md) | [JWT_WORKFLOW.md](JWT_WORKFLOW.md) | [LRU_CACHE.md](LRU_CACHE.md) | [RESUME_DOWNLOAD_REPORT.md](RESUME_DOWNLOAD_REPORT.md) | [TASKS.md](TASKS.md) | [DOC_PLAN.md](DOC_PLAN.md)
+END

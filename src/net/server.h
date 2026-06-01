@@ -1,14 +1,13 @@
-#pragma once
 #ifndef SERVER_H
 #define SERVER_H
-#include "base/config.h"
 
-extern const config_t *g_config;             // 全局配置指针
-extern int g_max_conns;                      // 配置决定大小
-int server_init(const char *host, int port); // 初始化服务端、绑定端口
+/** 初始化服务端：创建 socket、bind、listen、epoll */
+int server_init(const char *host, int port);
 
-int server_event_loop(int listen_fd); // 进入事件循环
+/** 进入事件循环（阻塞） */
+int server_event_loop(int listen_fd);
 
-// 清理
+/** 清理：关闭所有连接、释放资源 */
 int server_shutdown(void);
+
 #endif
